@@ -1,3 +1,5 @@
+// Animations for the table
+
 const table = document.querySelector('.table_1');
 
 anime ({
@@ -8,3 +10,10 @@ anime ({
     
 });
 
+
+// Code in charge of the tables
+
+
+const sections = [Home, Sobre_mi, Servicios, Projectos, Contacto];
+
+let currentSectionIndex = 0;
