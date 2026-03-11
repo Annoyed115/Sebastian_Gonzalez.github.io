@@ -19,6 +19,7 @@ body {
 /* Table and rope styles */
 
 .table_1 {
+    transform-origin: top center;
     position: relative;
     border: 0.3rem solid black;
     box-shadow: 0.5rem 0.5rem 1rem rgba(0, 0, 0, 0.5);
@@ -30,8 +31,8 @@ body {
 .rope_left, .rope_right {
     position: absolute;
     border: 0.3rem solid #000;
-    background-color: rgba(165, 42, 42, 0.8);
-    width: 3rem;  
+    background-color: #808080;
+    width: 2rem;  
     height: 100%;
     border-radius: 0.25rem;
     
@@ -55,4 +56,5 @@ body {
     height: 100vh;
     width: 100vw;
     margin: 0 auto;
+    padding-top: 10rem;
 }
