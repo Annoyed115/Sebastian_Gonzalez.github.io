@@ -93,3 +93,12 @@ body {
 
 /* Media queries */
 
+@media (max-width: 1024px)  {
+    .table_1 {
+        width: 90000vw;
+        height: 50rem;
+    }
+    .rope_left, .rope_right {
+        top: -49.4rem;
+    }
+}
