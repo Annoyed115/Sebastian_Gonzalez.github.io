@@ -17,3 +17,18 @@ anime ({
 const sections = [Home, Sobre_mi, Servicios, Projectos, Contacto];
 
 let currentSectionIndex = 0;
+
+const nextButton = document.querySelector('.Button_2');
+const prevButton = document.querySelector('.Button_1');
+
+nextButton.addEventListener('click', () => {
+    sections[currentSectionIndex].style.display = 'none';
+    currentSectionIndex = (currentSectionIndex + 1) % sections.length;
+    sections[currentSectionIndex].style.display = 'block';
+});
+
+prevButton.addEventListener('click', () => {
+    sections[currentSectionIndex].style.display = 'none';
+    currentSectionIndex = (currentSectionIndex - 1 + sections.length) % sections.length;
+    sections[currentSectionIndex].style.display = 'block';
+});
