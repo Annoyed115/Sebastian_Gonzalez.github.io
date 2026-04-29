@@ -31,6 +31,15 @@ body {
     max-height: calc(100svh - 6rem);
     border-radius: 1rem;
     grid-area: table;
+    transition: width 0.55s ease, height 0.55s ease, max-height 0.55s ease, box-shadow 0.55s ease;
+}
+
+.table_1.is-expanded {
+    height: min(82vh, 82rem);
+    height: min(82svh, 82rem);
+    max-height: calc(100vh - 4.8rem);
+    max-height: calc(100svh - 4.8rem);
+    box-shadow: 0.7rem 0.7rem 1.4rem rgba(0, 0, 0, 0.45);
 }
 
 .rope_left, .rope_right {
@@ -45,12 +54,72 @@ body {
 
 .rope_left {
     left: 0;
-    transform: translateX();
+    transform: translateX(6%);
 }
 
 .rope_right {
     right: 0;
-    transform: translateX();
+    transform: translateX(-6%);
+}
+
+.table_expand {
+    position: absolute;
+    top: clamp(1.6rem, 2vw, 2.8rem);
+    right: clamp(1.6rem, 2vw, 2.8rem);
+    z-index: 2;
+    width: clamp(3.8rem, 3.8vw, 5.2rem);
+    aspect-ratio: 1;
+    padding: 0;
+    color: #0878d8;
+}
+
+.table_expand:hover {
+    background-color: #f8fbff;
+}
+
+.table_expand:active {
+    translate: 0 0.2rem;
+}
+
+.table_expand_icon {
+    position: relative;
+    width: 52%;
+    aspect-ratio: 1;
+}
+
+.table_expand_icon::before,
+.table_expand_icon::after {
+    content: "";
+    position: absolute;
+    width: 46%;
+    aspect-ratio: 1;
+    border-color: currentColor;
+    border-style: solid;
+    border-width: 0.26rem;
+}
+
+.table_expand_icon::before {
+    top: 0;
+    right: 0;
+    border-left: 0;
+    border-bottom: 0;
+}
+
+.table_expand_icon::after {
+    left: 0;
+    bottom: 0;
+    border-right: 0;
+    border-top: 0;
+}
+
+.table_1.is-expanded .table_expand_icon::before {
+    top: 16%;
+    right: 16%;
+}
+
+.table_1.is-expanded .table_expand_icon::after {
+    left: 16%;
+    bottom: 16%;
 }
 
 /* Container */
@@ -68,13 +137,86 @@ body {
     padding: clamp(1rem, 2.4vw, 2.4rem);
     gap: clamp(0.8rem, 2vw, 2.4rem);
     overflow: visible;
+    transition: max-width 0.55s ease;
+}
+
+.container.is-table-expanded {
+    max-width: min(182rem, 98vw);
 }
 
 
 
 /* Buttons */
 
-.Button_1, .Button_2 {
+.language_control {
+  position: fixed;
+  top: clamp(1rem, 2vw, 2rem);
+  left: clamp(1rem, 2vw, 2rem);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  max-width: calc(100vw - 2rem);
+}
+
+.language_button {
+  min-height: 3.4rem;
+  min-width: 6.6rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(1.4rem) scale(0.96);
+  will-change: opacity, transform;
+}
+
+.language_icon {
+  position: relative;
+  width: 1.45rem;
+  aspect-ratio: 1;
+  border: 0.18rem solid currentColor;
+  border-radius: 50%;
+}
+
+.language_icon::before,
+.language_icon::after {
+  content: "";
+  position: absolute;
+  inset: 50% auto auto 50%;
+  translate: -50% -50%;
+  background-color: currentColor;
+}
+
+.language_icon::before {
+  width: 0.18rem;
+  height: 100%;
+}
+
+.language_icon::after {
+  width: 100%;
+  height: 0.18rem;
+}
+
+.language_text {
+  min-width: 1.9rem;
+  text-align: center;
+}
+
+.language_hint {
+  max-width: min(30rem, calc(100vw - 9rem));
+  border-radius: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.92);
+  color: #242424;
+  font-size: clamp(1.1rem, 1.15vw, 1.3rem);
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 0.65rem 0.9rem;
+  box-shadow: 0 0.25rem 0.9rem rgba(0, 0, 0, 0.14);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-0.8rem);
+  will-change: opacity, transform;
+}
+
+.Button_1, .Button_2, .table_expand {
   font: inherit;
   background-color: #f0f0f0;
   border: 0;
@@ -98,6 +240,27 @@ body {
   justify-content: center;
   min-width: clamp(6.8rem, 7vw, 8.6rem);
   min-height: 3.8rem;
+  will-change: opacity, transform;
+}
+
+.language_button {
+  font: inherit;
+  background-color: #f0f0f0;
+  border: 0;
+  color: #242424;
+  border-radius: 0.5em;
+  font-size: clamp(1.1rem, 1.15vw, 1.3rem);
+  padding: 0.45em 0.8em;
+  font-weight: 600;
+  text-shadow: 0 0.0625em 0 #fff;
+  box-shadow: inset 0 0.0625em 0 0 #f4f4f4, 0 0.0625em 0 0 #efefef,
+    0 0.125em 0 0 #ececec, 0 0.25em 0 0 #e0e0e0, 0 0.3125em 0 0 #dedede,
+    0 0.375em 0 0 #dcdcdc, 0 0.425em 0 0 #cacaca, 0 0.425em 0.5em 0 #cecece;
+  transition: box-shadow 0.15s ease, translate 0.15s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .Button_1 {
@@ -107,7 +270,20 @@ body {
 .Button_2 {
   grid-area: next;
 }
-.Button_1:active, .Button_2:active {
+
+.table_expand {
+  min-width: clamp(3.8rem, 3.8vw, 5.2rem);
+  min-height: clamp(3.8rem, 3.8vw, 5.2rem);
+  transition: background-color 0.2s ease, box-shadow 0.15s ease, translate 0.15s ease;
+}
+
+.Button_1.is-arrow,
+.Button_2.is-arrow {
+  font-size: clamp(1.8rem, 2vw, 2.4rem);
+  line-height: 1;
+}
+
+.Button_1:active, .Button_2:active, .table_expand:active, .language_button:active {
   translate: 0 0.225em;
   box-shadow: inset 0 0.03em 0 0 #f4f4f4, 0 0.03em 0 0 #efefef,
     0 0.0625em 0 0 #ececec, 0 0.125em 0 0 #e0e0e0, 0 0.125em 0 0 #dedede,
@@ -124,6 +300,15 @@ body {
     .table_1 {
         height: clamp(30rem, 64vh, 52rem);
         height: clamp(30rem, 64svh, 52rem);
+    }
+
+    .table_1.is-expanded {
+        height: min(80vh, 62rem);
+        height: min(80svh, 62rem);
+    }
+
+    .container.is-table-expanded {
+        max-width: 100%;
     }
 }
 
@@ -145,6 +330,11 @@ body {
         justify-self: center;
     }
 
+    .table_1.is-expanded {
+        height: min(74vh, 54rem);
+        height: min(74svh, 54rem);
+    }
+
     .Button_1, .Button_2 {
         width: 100%;
         max-width: 16rem;
@@ -160,6 +350,16 @@ body {
 }
 
 @media (max-width: 420px) {
+    .language_button {
+        min-width: 5.9rem;
+        padding-inline: 0.65rem;
+    }
+
+    .language_hint {
+        max-width: calc(100vw - 8rem);
+        padding: 0.55rem 0.75rem;
+    }
+
     .table_1 {
         height: clamp(24rem, 54vh, 36rem);
         height: clamp(24rem, 54svh, 36rem);
@@ -167,5 +367,11 @@ body {
 
     .rope_left, .rope_right {
         width: 1rem;
+    }
+
+    .table_expand {
+        width: 3.4rem;
+        min-width: 3.4rem;
+        min-height: 3.4rem;
     }
 }
