@@ -11,7 +11,8 @@ html {
 body {
     margin: 0;
     width: 100%;
-    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
 }
 
 
@@ -23,41 +24,50 @@ body {
     position: relative;
     border: 0.3rem solid black;
     box-shadow: 0.5rem 0.5rem 1rem rgba(0, 0, 0, 0.5);
-    width: 110%;
-    height: 65rem;
+    width: 100%;
+    height: clamp(32rem, 68vh, 65rem);
+    height: clamp(32rem, 68svh, 65rem);
+    max-height: calc(100vh - 6rem);
+    max-height: calc(100svh - 6rem);
     border-radius: 1rem;
+    grid-area: table;
 }
 
 .rope_left, .rope_right {
     position: absolute;
     border: 0.3rem solid #000;
     background-color: #808080;
-    width: 2rem;  
+    width: clamp(1.1rem, 1.7vw, 2rem);
     height: 100%;
     border-radius: 0.25rem;
-    
+    top: calc(-100% + 0.10rem);
 }
 
 .rope_left {
-    top: -64.4rem;
-    left: 10px;
+    left: 0;
+    transform: translateX();
 }
 
 .rope_right {
-    top: -64.4rem;
-    right: 1rem;
+    right: 0;
+    transform: translateX();
 }
 
 /* Container */
 .container {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(24rem, 1fr) auto;
+    grid-template-areas: "prev table next";
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    width: 100vw;
+    min-height: 100vh;
+    min-height: 100svh;
+    width: 100%;
+    max-width: 122rem;
     margin: 0 auto;
-    padding-top: -80rem;
-    gap: 2rem;
+    padding: clamp(1rem, 2.4vw, 2.4rem);
+    gap: clamp(0.8rem, 2vw, 2.4rem);
+    overflow: visible;
 }
 
 
@@ -65,24 +75,37 @@ body {
 /* Buttons */
 
 .Button_1, .Button_2 {
-    font: inherit;
+  font: inherit;
   background-color: #f0f0f0;
   border: 0;
   color: #242424;
   border-radius: 0.5em;
-  font-size: 1.35rem;
-  padding: 0.375em 1em;
+  font-size: clamp(1.2rem, 1.3vw, 1.45rem);
+  padding: 0.55em 1em;
   font-weight: 600;
   text-shadow: 0 0.0625em 0 #fff;
   box-shadow: inset 0 0.0625em 0 0 #f4f4f4, 0 0.0625em 0 0 #efefef,
     0 0.125em 0 0 #ececec, 0 0.25em 0 0 #e0e0e0, 0 0.3125em 0 0 #dedede,
     0 0.375em 0 0 #dcdcdc, 0 0.425em 0 0 #cacaca, 0 0.425em 0.5em 0 #cecece;
-  transition: 0.15s ease;
+  transition: box-shadow 0.15s ease, translate 0.15s ease;
   cursor: pointer;
   flex-shrink: 0;
   display: inline-flex;
-    align-items: center;
-  
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(1.4rem) scale(0.96);
+  justify-content: center;
+  min-width: clamp(6.8rem, 7vw, 8.6rem);
+  min-height: 3.8rem;
+}
+
+.Button_1 {
+  grid-area: prev;
+}
+
+.Button_2 {
+  grid-area: next;
 }
 .Button_1:active, .Button_2:active {
   translate: 0 0.225em;
@@ -93,12 +116,56 @@ body {
 
 /* Media queries */
 
-@media (max-width: 1024px)  {
-    .table_1 {
-        width: 90000vw;
-        height: 50rem;
+@media (max-width: 1024px) {
+    .container {
+        max-width: 100%;
     }
+
+    .table_1 {
+        height: clamp(30rem, 64vh, 52rem);
+        height: clamp(30rem, 64svh, 52rem);
+    }
+}
+
+@media (max-width: 700px) {
+    .container {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas:
+            "table table"
+            "prev next";
+        align-content: center;
+        gap: 1.6rem;
+        padding: 1.4rem;
+    }
+
+    .table_1 {
+        width: min(100%, 52rem);
+        height: clamp(28rem, 58vh, 44rem);
+        height: clamp(28rem, 58svh, 44rem);
+        justify-self: center;
+    }
+
+    .Button_1, .Button_2 {
+        width: 100%;
+        max-width: 16rem;
+    }
+
+    .Button_1 {
+        justify-self: end;
+    }
+
+    .Button_2 {
+        justify-self: start;
+    }
+}
+
+@media (max-width: 420px) {
+    .table_1 {
+        height: clamp(24rem, 54vh, 36rem);
+        height: clamp(24rem, 54svh, 36rem);
+    }
+
     .rope_left, .rope_right {
-        top: -49.4rem;
+        width: 1rem;
     }
 }
