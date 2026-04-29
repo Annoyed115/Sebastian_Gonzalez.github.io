@@ -6,28 +6,60 @@ const expandButton = document.querySelector('.table_expand');
 const languageButton = document.querySelector('.language_button');
 const languageText = document.querySelector('.language_text');
 const languageHint = document.querySelector('.language_hint');
+const introText = document.querySelector('.intro_text');
+const introMain = document.querySelector('.intro_main');
+const introNote = document.querySelector('.intro_note');
+const introTimer = document.querySelector('.intro_timer');
+const introTimerProgress = document.querySelector('.intro_timer_progress');
 const buttons = document.querySelectorAll('.Button_1, .Button_2, .table_expand');
 let pendingNavigationStyle = null;
 let languageHintTimeout = null;
+let introTimers = [];
+let introFinalVisible = false;
+let pendingFinalAfterExpand = false;
+let expandFinalFallback = null;
 
 // The Translation Section
 
 const translations = {
-    es: {},
-    en: {}
-};
-
-const languageHintTexts = {
-    es: 'Haz Clic para Cambiar de Idioma',
-    en: 'Click to Change Language'
-};
-
-const languageButtonLabels = {
-    es: 'Cambiar idioma',
-    en: 'Change language'
+    es: {
+        languageHint: 'Haz Clic para Cambiar de Idioma',
+        languageButtonLabel: 'Cambiar idioma',
+        expandLabel: 'Agrandar tablero',
+        collapseLabel: 'Reducir tablero',
+        previousSectionLabel: 'Seccion anterior',
+        nextSectionLabel: 'Siguiente seccion',
+        previousButtonLabel: 'Boton anterior',
+        nextButtonLabel: 'Boton siguiente',
+        introHello: '\u00a1Hola!',
+        introName: 'Soy Sebastian,',
+        introExpandPrompt: 'Puedes agrandar el tablero para mejor visualizacion!',
+        introFinal: '! Soy Desarrollador Front End !',
+        introFinalNote: '(aunque tambien estoy en camino a ser full stack)'
+    },
+    en: {
+        languageHint: 'Click to Change Language',
+        languageButtonLabel: 'Change language',
+        expandLabel: 'Expand board',
+        collapseLabel: 'Collapse board',
+        previousSectionLabel: 'Previous section',
+        nextSectionLabel: 'Next section',
+        previousButtonLabel: 'Previous button',
+        nextButtonLabel: 'Next button',
+        introHello: 'Hello!',
+        introName: 'I am Sebastian,',
+        introExpandPrompt: 'You can expand the board for better viewing!',
+        introFinal: '! I am a Front End Developer !',
+        introFinalNote: '(although I am also on my way to becoming full stack)'
+    }
 };
 
 let currentLanguage = localStorage.getItem('language') || 'es';
+let currentIntroContent = null;
+
+const translateText = (translationKey, language = currentLanguage) => {
+    return translations[language]?.[translationKey] || translations.es[translationKey] || translationKey;
+};
 
 const applyLanguage = (language) => {
     const dictionary = translations[language] || {};
@@ -35,7 +67,7 @@ const applyLanguage = (language) => {
     document.documentElement.lang = language;
     languageText.textContent = language.toUpperCase();
     languageButton.setAttribute('aria-pressed', String(language !== 'es'));
-    languageButton.setAttribute('aria-label', languageButtonLabels[language] || languageButtonLabels.es);
+    languageButton.setAttribute('aria-label', translateText('languageButtonLabel', language));
 
     document.querySelectorAll('[data-i18n]').forEach((element) => {
         const translationKey = element.dataset.i18n;
@@ -46,9 +78,53 @@ const applyLanguage = (language) => {
         }
     });
 
+    if (currentIntroContent && introMain && introNote) {
+        introMain.textContent = translateText(currentIntroContent.mainKey, language);
+        introNote.textContent = currentIntroContent.noteKey
+            ? translateText(currentIntroContent.noteKey, language)
+            : '';
+    }
+
+    if (expandButton) {
+        const isExpanded = table?.classList.contains('is-expanded');
+        expandButton.setAttribute(
+            'aria-label',
+            translateText(isExpanded ? 'collapseLabel' : 'expandLabel', language)
+        );
+    }
+
     window.dispatchEvent(new CustomEvent('languagechange', {
         detail: { language }
     }));
+};
+
+const animateIntroLanguageChange = (language) => {
+    if (!currentIntroContent || !introText || !introMain || !introNote) {
+        applyLanguage(language);
+        return;
+    }
+
+    anime.remove(introText);
+    anime({
+        targets: introText,
+        opacity: [Number(getComputedStyle(introText).opacity) || 1, 0],
+        translateY: [0, -8],
+        scale: [1, 0.985],
+        duration: 140,
+        easing: 'easeInQuad',
+        complete: () => {
+            applyLanguage(language);
+
+            anime({
+                targets: introText,
+                opacity: [0, 1],
+                translateY: [8, 0],
+                scale: [0.985, 1],
+                duration: 260,
+                easing: 'easeOutCubic'
+            });
+        }
+    });
 };
 
 const hideLanguageHint = () => {
@@ -72,7 +148,7 @@ const showLanguageHint = (duration = 4200) => {
     }
 
     clearTimeout(languageHintTimeout);
-    languageHint.textContent = languageHintTexts[currentLanguage] || languageHintTexts.es;
+    languageHint.textContent = translateText('languageHint');
 
     anime.remove(languageHint);
     anime({
@@ -115,10 +191,170 @@ if (languageButton && languageText) {
     languageButton.addEventListener('click', () => {
         currentLanguage = currentLanguage === 'es' ? 'en' : 'es';
         localStorage.setItem('language', currentLanguage);
-        applyLanguage(currentLanguage);
+        animateIntroLanguageChange(currentLanguage);
         showLanguageHint(3200);
     });
 }
+
+
+// Intro 
+
+const timerCircleLength = 113.1;
+const expandPromptDuration = 4600;
+
+const clearIntroTimers = () => {
+    introTimers.forEach((timer) => clearTimeout(timer));
+    introTimers = [];
+};
+
+const hideIntroTimer = () => {
+    if (!introTimer || !introTimerProgress) {
+        return;
+    }
+
+    anime.remove([introTimer, introTimerProgress]);
+    const currentTimerOpacity = Number(getComputedStyle(introTimer).opacity) || 0;
+
+    anime({
+        targets: introTimer,
+        opacity: [currentTimerOpacity, 0],
+        scale: [1, 0.88],
+        duration: 180,
+        easing: 'easeInQuad'
+    });
+};
+
+const hideIntroForResize = () => {
+    anime.remove([introText, introTimer, introTimerProgress]);
+
+    if (introText) {
+        introText.style.opacity = '0';
+        introText.style.transform = 'translateY(-0.8rem) scale(0.98)';
+    }
+
+    if (introMain && introNote) {
+        introMain.textContent = '';
+        introNote.textContent = '';
+        introText?.classList.remove('is-final');
+        currentIntroContent = null;
+    }
+
+    if (introTimer) {
+        introTimer.style.opacity = '0';
+        introTimer.style.transform = 'scale(0.88)';
+    }
+
+    if (introTimerProgress) {
+        introTimerProgress.style.strokeDashoffset = timerCircleLength;
+    }
+};
+
+const startIntroTimer = () => {
+    if (!introTimer || !introTimerProgress || introFinalVisible) {
+        return;
+    }
+
+    anime.remove([introTimer, introTimerProgress]);
+    introTimerProgress.style.strokeDasharray = timerCircleLength;
+    introTimerProgress.style.strokeDashoffset = 0;
+
+    anime({
+        targets: introTimer,
+        opacity: [0, 1],
+        scale: [0.88, 1],
+        duration: 280,
+        easing: 'easeOutBack(1.35)'
+    });
+
+    anime({
+        targets: introTimerProgress,
+        strokeDashoffset: [0, timerCircleLength],
+        duration: expandPromptDuration,
+        easing: 'linear',
+        complete: showFinalIntroText
+    });
+};
+
+const animateIntroText = ({ mainKey, noteKey = '', main, note = '', isFinal = false }) => {
+    if (!introText || !introMain || !introNote) {
+        return;
+    }
+
+    const hasVisibleText = introMain.textContent.trim() || introNote.textContent.trim();
+
+    const showNextText = () => {
+        currentIntroContent = mainKey
+            ? { mainKey, noteKey, isFinal }
+            : null;
+        introMain.textContent = mainKey ? translateText(mainKey) : main;
+        introNote.textContent = noteKey ? translateText(noteKey) : note;
+        introText.classList.toggle('is-final', isFinal);
+
+        anime({
+            targets: introText,
+            opacity: [0, 1],
+            translateY: [14, 0],
+            scale: [0.98, 1],
+            duration: 560,
+            easing: 'easeOutCubic'
+        });
+    };
+
+    anime.remove(introText);
+
+    if (!hasVisibleText) {
+        showNextText();
+        return;
+    }
+
+    anime({
+        targets: introText,
+        opacity: [1, 0],
+        translateY: [0, -12],
+        scale: [1, 0.98],
+        duration: 240,
+        easing: 'easeInQuad',
+        complete: showNextText
+    });
+};
+
+const showFinalIntroText = () => {
+    if (introFinalVisible) {
+        return;
+    }
+
+    introFinalVisible = true;
+    clearIntroTimers();
+    hideIntroTimer();
+    animateIntroText({
+        mainKey: 'introFinal',
+        noteKey: 'introFinalNote',
+        isFinal: true
+    });
+};
+
+const startIntroSequenceWithTimer = () => {
+    clearIntroTimers();
+    hideIntroTimer();
+    introFinalVisible = false;
+
+    animateIntroText({ mainKey: 'introHello' });
+
+    introTimers.push(setTimeout(() => {
+        animateIntroText({ mainKey: 'introName' });
+    }, 2400));
+
+    introTimers.push(setTimeout(() => {
+        animateIntroText({ mainKey: 'introExpandPrompt' });
+        introTimers.push(setTimeout(startIntroTimer, 720));
+    }, 5200));
+};
+
+const showFinalAfterExpand = () => {
+    clearTimeout(expandFinalFallback);
+    pendingFinalAfterExpand = false;
+    showFinalIntroText();
+};
 
 
 // Animations for the buttons
@@ -146,7 +382,10 @@ anime ({
     translateY: [-400, 0],
     duration: 3400,
     easing: 'easeOutElastic(1, 0.5)',
-    complete: showButtons
+    complete: () => {
+        showButtons();
+        startIntroSequenceWithTimer();
+    }
 
 });
 
@@ -158,8 +397,8 @@ if (table && expandButton) {
         nextButton.textContent = useArrows ? '\u2192' : 'button';
         prevButton.classList.toggle('is-arrow', useArrows);
         nextButton.classList.toggle('is-arrow', useArrows);
-        prevButton.setAttribute('aria-label', useArrows ? 'Seccion anterior' : 'Boton anterior');
-        nextButton.setAttribute('aria-label', useArrows ? 'Siguiente seccion' : 'Boton siguiente');
+        prevButton.setAttribute('aria-label', translateText(useArrows ? 'previousSectionLabel' : 'previousButtonLabel'));
+        nextButton.setAttribute('aria-label', translateText(useArrows ? 'nextSectionLabel' : 'nextButtonLabel'));
     };
 
     const animateNavigationButtons = (useArrows) => {
@@ -190,14 +429,26 @@ if (table && expandButton) {
     };
 
     expandButton.addEventListener('click', () => {
-        const isExpanded = table.classList.toggle('is-expanded');
+        const isExpanded = !table.classList.contains('is-expanded');
+        const shouldAdaptFinalText = isExpanded || introFinalVisible;
+
+        if (shouldAdaptFinalText) {
+            clearIntroTimers();
+            hideIntroForResize();
+            introFinalVisible = false;
+            pendingFinalAfterExpand = true;
+            clearTimeout(expandFinalFallback);
+            expandFinalFallback = setTimeout(showFinalAfterExpand, 750);
+        }
+
+        table.classList.toggle('is-expanded', isExpanded);
 
         pendingNavigationStyle = isExpanded ? 'arrows' : 'labels';
         container?.classList.toggle('is-table-expanded', isExpanded);
         expandButton.setAttribute('aria-pressed', String(isExpanded));
         expandButton.setAttribute(
             'aria-label',
-            isExpanded ? 'Reducir tablero' : 'Agrandar tablero'
+            translateText(isExpanded ? 'collapseLabel' : 'expandLabel')
         );
     });
 
@@ -208,6 +459,10 @@ if (table && expandButton) {
 
         animateNavigationButtons(pendingNavigationStyle === 'arrows');
         pendingNavigationStyle = null;
+
+        if (pendingFinalAfterExpand) {
+            showFinalAfterExpand();
+        }
     });
 }
 
