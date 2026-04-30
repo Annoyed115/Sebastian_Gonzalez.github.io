@@ -11,6 +11,7 @@ const introMain = document.querySelector('.intro_main');
 const introNote = document.querySelector('.intro_note');
 const introTimer = document.querySelector('.intro_timer');
 const introTimerProgress = document.querySelector('.intro_timer_progress');
+const expandArrow = document.querySelector('.expand_arrow');
 const buttons = document.querySelectorAll('.Button_1, .Button_2, .table_expand');
 let pendingNavigationStyle = null;
 let languageHintTimeout = null;
@@ -18,6 +19,8 @@ let introTimers = [];
 let introFinalVisible = false;
 let pendingFinalAfterExpand = false;
 let expandFinalFallback = null;
+let expandArrowDismissed = false;
+let expandArrowAnimationId = 0;
 
 // The Translation Section
 
@@ -224,6 +227,76 @@ const hideIntroTimer = () => {
     });
 };
 
+const hideExpandArrow = (duration = 220) => {
+    if (!expandArrow) {
+        return;
+    }
+
+    expandArrowAnimationId += 1;
+    anime.remove(expandArrow);
+
+    if (duration === 0) {
+        expandArrow.style.opacity = '0';
+        expandArrow.classList.remove('is-visible');
+        expandArrow.style.visibility = 'hidden';
+        expandArrow.style.transform = 'translate(-0.8rem, 0.8rem) scale(0.94)';
+        return;
+    }
+
+    const currentArrowOpacity = Number(getComputedStyle(expandArrow).opacity);
+
+    anime({
+        targets: expandArrow,
+        opacity: [Number.isFinite(currentArrowOpacity) ? currentArrowOpacity : 1, 0],
+        translateX: [0, -8],
+        translateY: [0, 8],
+        scale: [1, 0.94],
+        duration,
+        easing: 'easeInQuad',
+        complete: () => {
+            expandArrow.classList.remove('is-visible');
+            expandArrow.style.visibility = 'hidden';
+        }
+    });
+};
+
+const showExpandArrow = () => {
+    if (!expandArrow || introFinalVisible || expandArrowDismissed || table?.classList.contains('is-expanded')) {
+        return;
+    }
+
+    const animationId = expandArrowAnimationId + 1;
+    expandArrowAnimationId = animationId;
+    anime.remove(expandArrow);
+    expandArrow.classList.add('is-visible');
+    expandArrow.style.visibility = 'visible';
+
+    anime({
+        targets: expandArrow,
+        opacity: [0, 1],
+        translateX: [-10, 0],
+        translateY: [10, 0],
+        scale: [0.94, 1],
+        duration: 520,
+        easing: 'easeOutBack(1.35)',
+        complete: () => {
+            if (animationId !== expandArrowAnimationId || expandArrowDismissed) {
+                return;
+            }
+
+            anime({
+                targets: expandArrow,
+                translateX: [0, 4],
+                translateY: [0, -4],
+                duration: 860,
+                direction: 'alternate',
+                loop: true,
+                easing: 'easeInOutSine'
+            });
+        }
+    });
+};
+
 const hideIntroForResize = () => {
     anime.remove([introText, introTimer, introTimerProgress]);
 
@@ -281,6 +354,7 @@ const animateIntroText = ({ mainKey, noteKey = '', main, note = '', isFinal = fa
     }
 
     const hasVisibleText = introMain.textContent.trim() || introNote.textContent.trim();
+    const shouldShowExpandArrow = mainKey === 'introExpandPrompt';
 
     const showNextText = () => {
         currentIntroContent = mainKey
@@ -296,7 +370,12 @@ const animateIntroText = ({ mainKey, noteKey = '', main, note = '', isFinal = fa
             translateY: [14, 0],
             scale: [0.98, 1],
             duration: 560,
-            easing: 'easeOutCubic'
+            easing: 'easeOutCubic',
+            complete: () => {
+                if (shouldShowExpandArrow) {
+                    showExpandArrow();
+                }
+            }
         });
     };
 
@@ -325,6 +404,7 @@ const showFinalIntroText = () => {
 
     introFinalVisible = true;
     clearIntroTimers();
+    hideExpandArrow();
     hideIntroTimer();
     animateIntroText({
         mainKey: 'introFinal',
@@ -335,6 +415,8 @@ const showFinalIntroText = () => {
 
 const startIntroSequenceWithTimer = () => {
     clearIntroTimers();
+    expandArrowDismissed = false;
+    hideExpandArrow(0);
     hideIntroTimer();
     introFinalVisible = false;
 
@@ -434,6 +516,9 @@ if (table && expandButton) {
     expandButton.addEventListener('click', () => {
         const isExpanded = !table.classList.contains('is-expanded');
         const shouldAdaptFinalText = isExpanded || introFinalVisible;
+
+        expandArrowDismissed = true;
+        hideExpandArrow();
 
         if (shouldAdaptFinalText) {
             clearIntroTimers();

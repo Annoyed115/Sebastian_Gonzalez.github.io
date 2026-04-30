@@ -20,6 +20,8 @@ body {
 /* Table and rope styles */
 
 .table_1 {
+    --expand-control-offset: clamp(1.6rem, 2vw, 2.8rem);
+    --expand-control-size: clamp(3.8rem, 3.8vw, 5.2rem);
     transform-origin: top center;
     position: relative;
     border: 0.3rem solid black;
@@ -64,13 +66,15 @@ body {
 
 .table_expand {
     position: absolute;
-    top: clamp(1.6rem, 2vw, 2.8rem);
-    right: clamp(1.6rem, 2vw, 2.8rem);
+    top: var(--expand-control-offset);
+    right: var(--expand-control-offset);
     z-index: 2;
-    width: clamp(3.8rem, 3.8vw, 5.2rem);
+    width: var(--expand-control-size);
+    min-width: var(--expand-control-size);
+    min-height: var(--expand-control-size);
     aspect-ratio: 1;
     padding: 0;
-    color: #0878d8;
+    color: #242424;
 }
 
 .table_expand:hover {
@@ -83,19 +87,21 @@ body {
 
 .table_expand_icon {
     position: relative;
-    width: 52%;
+    width: clamp(2.9rem, 74%, 4rem);
+    min-width: 2.9rem;
     aspect-ratio: 1;
+    flex: 0 0 auto;
 }
 
 .table_expand_icon::before,
 .table_expand_icon::after {
     content: "";
     position: absolute;
-    width: 46%;
+    width: 60%;
     aspect-ratio: 1;
     border-color: currentColor;
     border-style: solid;
-    border-width: 0.26rem;
+    border-width: clamp(0.34rem, 0.32vw, 0.42rem);
 }
 
 .table_expand_icon::before {
@@ -113,13 +119,75 @@ body {
 }
 
 .table_1.is-expanded .table_expand_icon::before {
-    top: 16%;
-    right: 16%;
+    top: 4%;
+    right: 4%;
 }
 
 .table_1.is-expanded .table_expand_icon::after {
-    left: 16%;
-    bottom: 16%;
+    left: 4%;
+    bottom: 4%;
+}
+
+.expand_arrow {
+    position: absolute;
+    top: calc(var(--expand-control-offset) + var(--expand-control-size) * 1.05);
+    right: calc(var(--expand-control-offset) + var(--expand-control-size) * 0.92);
+    z-index: 3;
+    width: clamp(5.6rem, 5.4vw, 8.4rem);
+    height: clamp(3.8rem, 4.2vw, 6rem);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(-0.8rem, 0.8rem) scale(0.94);
+    will-change: opacity, transform;
+}
+
+.expand_arrow.is-visible {
+    visibility: visible;
+}
+
+.expand_arrow_inner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-36deg);
+    transform-origin: 86% 18%;
+    will-change: transform;
+}
+
+.expand_arrow_line {
+    position: absolute;
+    top: 50%;
+    right: 0.4rem;
+    width: 78%;
+    height: clamp(0.34rem, 0.34vw, 0.44rem);
+    border-radius: 999rem;
+    background-color: #242424;
+    box-shadow: 0 0.18rem 0.55rem rgba(36, 36, 36, 0.2);
+}
+
+.expand_arrow_line::before,
+.expand_arrow_line::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -0.1rem;
+    width: clamp(1.5rem, 1.6vw, 2.1rem);
+    height: inherit;
+    border-radius: inherit;
+    background-color: inherit;
+    transform-origin: right center;
+}
+
+.expand_arrow_line::before {
+    transform: translateY(-50%) rotate(42deg);
+}
+
+.expand_arrow_line::after {
+    transform: translateY(-50%) rotate(-42deg);
 }
 
 .table_content {
@@ -358,8 +426,11 @@ body {
 }
 
 .table_expand {
-  min-width: clamp(3.8rem, 3.8vw, 5.2rem);
-  min-height: clamp(3.8rem, 3.8vw, 5.2rem);
+  width: var(--expand-control-size);
+  min-width: var(--expand-control-size);
+  min-height: var(--expand-control-size);
+  max-width: var(--expand-control-size);
+  padding: 0;
   transition: background-color 0.2s ease, box-shadow 0.15s ease, translate 0.15s ease;
 }
 
@@ -463,9 +534,16 @@ body {
         width: 1rem;
     }
 
+    .table_1 {
+        --expand-control-size: 3.4rem;
+    }
+
     .table_expand {
         width: 3.4rem;
-        min-width: 3.4rem;
-        min-height: 3.4rem;
+    }
+
+    .table_expand_icon {
+        width: 2.9rem;
+        min-width: 2.9rem;
     }
 }
