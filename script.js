@@ -391,6 +391,9 @@ anime ({
 
 // Nav and expand buttons
 
+const nextButton = document.querySelector('.Button_2');
+const prevButton = document.querySelector('.Button_1');
+
 if (table && expandButton) {
     const setNavigationButtons = (useArrows) => {
         prevButton.textContent = useArrows ? '\u2190' : 'button';
@@ -475,9 +478,6 @@ const sections = ['Home', 'Sobre_mi', 'Servicios', 'Projectos', 'Contacto']
     .filter(Boolean);
 
 let currentSectionIndex = 0;
-
-const nextButton = document.querySelector('.Button_2');
-const prevButton = document.querySelector('.Button_1');
 
 if (sections.length > 0) {
     nextButton.addEventListener('click', () => {
