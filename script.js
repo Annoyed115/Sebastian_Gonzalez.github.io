@@ -80,6 +80,7 @@ const state = {
     expandArrowAnimationId: 0,
     portfolioPromptTimer: null,
     introContentAfterResize: null,
+    isSectionAnimating: false,
     currentSectionIndex: 0
 };
 
@@ -132,10 +133,10 @@ const applyLanguage = (language) => {
     });
 
     if (state.currentIntroContent && dom.introMain && dom.introNote) {
-        const { mainKey, noteKey } = state.currentIntroContent;
+        const { mainKey, noteKey, main, note } = state.currentIntroContent;
 
-        dom.introMain.textContent = translateText(mainKey, language);
-        dom.introNote.textContent = noteKey ? translateText(noteKey, language) : '';
+        dom.introMain.textContent = mainKey ? translateText(mainKey, language) : main;
+        dom.introNote.textContent = noteKey ? translateText(noteKey, language) : note || '';
     }
 
     if (dom.expandButton) {
@@ -351,7 +352,13 @@ const showExpandArrow = () => {
 };
 
 const setIntroContent = ({ mainKey, noteKey = '', main = '', note = '', isFinal = false }) => {
-    state.currentIntroContent = mainKey ? { mainKey, noteKey, isFinal } : null;
+    state.currentIntroContent = {
+        mainKey,
+        noteKey,
+        main,
+        note,
+        isFinal
+    };
 
     dom.introMain.textContent = mainKey ? translateText(mainKey) : main;
     dom.introNote.textContent = noteKey ? translateText(noteKey) : note;
@@ -366,6 +373,8 @@ const cloneIntroContent = (content) => {
     return {
         mainKey: content.mainKey,
         noteKey: content.noteKey,
+        main: content.main,
+        note: content.note,
         isFinal: content.isFinal
     };
 };
@@ -506,7 +515,7 @@ const showFinalAfterExpand = () => {
     clearTimeout(state.expandFinalFallback);
     state.pendingFinalAfterExpand = false;
 
-    if (state.introContentAfterResize?.mainKey === 'introPortfolioPrompt') {
+    if (state.introContentAfterResize) {
         state.introFinalVisible = true;
         animateIntroText(state.introContentAfterResize);
         state.introContentAfterResize = null;
@@ -654,32 +663,75 @@ const setupExpandControls = () => {
 // Sections
 
 const sections = [
-
-    { id: 'home', title: 'home'},
+    { id: 'home', title: 'home' },
     { id: 'sobre_mi', title: 'Sobre Mi' },
     { id: 'proyectos', title: 'Proyectos' },
     { id: 'contacto', title: 'Contacto' }
-]   
+];
 
+const getSectionContent = (section) => {
+    if (section.id === 'home') {
+        return {
+            mainKey: 'introPortfolioPrompt',
+            isFinal: true
+        };
+    }
 
-;
+    return {
+        main: section.title,
+        isFinal: true
+    };
+};
 
-const showSection = (nextIndex) => {
-    if (!sections.length) {
+const showSection = (nextIndex, direction = 1) => {
+    if (!sections.length || !dom.introText || !dom.introMain || !dom.introNote || state.isSectionAnimating) {
         return;
     }
 
-   state.currentSectionIndex = (nextIndex + sections.length) % sections.length;
-   const section = sections[state.currentSectionIndex];
-   
+    const normalizedIndex = (nextIndex + sections.length) % sections.length;
 
-   if (section.id === 'home') {
-        dom.introMain.textContent = translateText('introPortfolioPrompt');
-        dom.introNote.textContent = '';
-} else {
-        dom.introMain.textContent = section.title;
-        dom.introNote.textContent = '';
-}
+    if (normalizedIndex === state.currentSectionIndex) {
+        return;
+    }
+
+    state.isSectionAnimating = true;
+    clearTimerList(state.introTimers);
+    clearTimeout(state.portfolioPromptTimer);
+    hideExpandArrow();
+    hideIntroTimer();
+    setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), false);
+
+    const exitX = direction > 0 ? -28 : 28;
+    const enterX = direction > 0 ? 32 : -32;
+
+    anime.remove(dom.introText);
+    anime({
+        targets: dom.introText,
+        opacity: [getOpacity(dom.introText), 0],
+        translateX: [0, exitX],
+        translateY: [0, -4],
+        scale: [1, 0.98],
+        duration: 220,
+        easing: 'easeInQuad',
+        complete: () => {
+            state.currentSectionIndex = normalizedIndex;
+            setIntroContent(getSectionContent(sections[state.currentSectionIndex]));
+
+            anime({
+                targets: dom.introText,
+                opacity: [0, 1],
+                translateX: [enterX, 0],
+                translateY: [8, 0],
+                scale: [0.98, 1],
+                duration: 420,
+                easing: 'easeOutCubic',
+                complete: () => {
+                    state.isSectionAnimating = false;
+                    setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), true);
+                }
+            });
+        }
+    });
 };
 
 const setupSectionNavigation = () => {
@@ -688,11 +740,11 @@ const setupSectionNavigation = () => {
     }
 
     dom.nextButton.addEventListener('click', () => {
-        showSection(state.currentSectionIndex + 1);
+        showSection(state.currentSectionIndex + 1, 1);
     });
 
     dom.prevButton.addEventListener('click', () => {
-        showSection(state.currentSectionIndex - 1);
+        showSection(state.currentSectionIndex - 1, -1);
     });
 };
 
