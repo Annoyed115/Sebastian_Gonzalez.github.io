@@ -671,7 +671,15 @@ const showSection = (nextIndex) => {
 
    state.currentSectionIndex = (nextIndex + sections.length) % sections.length;
    const section = sections[state.currentSectionIndex];
-   document.querySelector('.table_content').innerHTML = `<h1>${section.title}</h1>`;
+   
+
+   if (section.id === 'home') {
+        dom.introMain.textContent = translateText('introPortfolioPrompt');
+        dom.introNote.textContent = '';
+} else {
+        dom.introMain.textContent = section.title;
+        dom.introNote.textContent = '';
+}
 };
 
 const setupSectionNavigation = () => {
