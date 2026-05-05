@@ -76,7 +76,11 @@ const translations = {
         projectCard4Detail: 'Aplicacion CRUD para registrar, editar y eliminar empleados, conectando frontend, backend y base de datos en un flujo completo.',
         projectRepoLabel: 'Ver repositorio',
         projectDetailClose: 'Cerrar proyecto',
-        sectionContactAction: 'Contactame'
+        sectionContactAction: 'Contactame',
+        contactGithubLabel: 'GitHub',
+        contactLinkedinLabel: 'LinkedIn',
+        contactEmailLabel: 'Email',
+        contactCodeLabel: 'Codigo'
     },
     en: {
         languageHint: 'Click to Change Language',
@@ -119,7 +123,11 @@ const translations = {
         projectCard4Detail: 'CRUD application to create, edit and delete employees, connecting frontend, backend and database in a complete flow.',
         projectRepoLabel: 'View repository',
         projectDetailClose: 'Close project',
-        sectionContactAction: 'Contact me'
+        sectionContactAction: 'Contact me',
+        contactGithubLabel: 'GitHub',
+        contactLinkedinLabel: 'LinkedIn',
+        contactEmailLabel: 'Email',
+        contactCodeLabel: 'Code'
     }
 };
 
@@ -211,6 +219,8 @@ const applyLanguage = (language) => {
 
         if (view === 'projectsGrid') {
             updateProjectCardTranslations();
+        } else if (view === 'contactSocial') {
+            updateContactTranslations();
         } else {
             dom.introMain.textContent = mainKey ? translateText(mainKey, language) : main;
             dom.introNote.textContent = noteKey ? translateText(noteKey, language) : note || '';
@@ -469,6 +479,10 @@ const setIntroContent = ({ mainKey, noteKey = '', main = '', note = '', actionKe
         resetSectionTextStyles();
     }
 
+    if (view !== 'contactSocial') {
+        clearContactPanel();
+    }
+
     state.currentIntroContent = {
         mainKey,
         noteKey,
@@ -655,6 +669,12 @@ const showFinalAfterExpand = () => {
     if (shouldRestoreIntroAfterResize(state.introContentAfterResize)) {
         if (state.introContentAfterResize.view === 'projectsGrid') {
             renderProjectGridContent({ animate: true });
+            state.introContentAfterResize = null;
+            return;
+        }
+
+        if (state.introContentAfterResize.view === 'contactSocial') {
+            renderContactPanel({ animate: true });
             state.introContentAfterResize = null;
             return;
         }
@@ -956,6 +976,33 @@ const projectCards = [
     }
 ];
 
+const contactLinks = [
+    {
+        id: 'github',
+        labelKey: 'contactGithubLabel',
+        label: 'GH',
+        href: 'https://github.com/Annoyed115'
+    },
+    {
+        id: 'linkedin',
+        labelKey: 'contactLinkedinLabel',
+        label: 'in',
+        href: 'https://linkedin.com/in/sebastian-gonzalez115/'
+    },
+    {
+        id: 'email',
+        labelKey: 'contactEmailLabel',
+        label: '@',
+        href: 'mailto:'
+    },
+    {
+        id: 'code',
+        labelKey: 'contactCodeLabel',
+        label: '</>',
+        href: 'https://github.com/Annoyed115?tab=repositories'
+    }
+];
+
 const getSectionContent = (section) => {
     if (state.sectionDetails[section.id] && section.detailMainKey && section.detailActionKey) {
         return {
@@ -1005,6 +1052,179 @@ const clearProjectCards = () => {
     closeProjectDetail({ instant: true });
     getProjectGrid()?.remove();
     dom.introText?.classList.remove('has-projects');
+};
+
+const getContactPanel = () => dom.introText?.querySelector('.contact_panel');
+
+const clearContactPanel = () => {
+    getContactPanel()?.remove();
+    dom.introText?.classList.remove('has-contact');
+};
+
+const updateContactTranslations = () => {
+    getContactPanel()?.querySelectorAll('.contact_link').forEach((linkElement) => {
+        const contactLink = contactLinks.find((item) => item.id === linkElement.dataset.contactId);
+
+        if (!contactLink) {
+            return;
+        }
+
+        linkElement.setAttribute('aria-label', translateText(contactLink.labelKey));
+        linkElement.querySelector('.contact_link_text').textContent = translateText(contactLink.labelKey);
+    });
+};
+
+const buildContactPanel = () => {
+    const panel = document.createElement('div');
+    panel.className = 'contact_panel';
+
+    const imageWrap = document.createElement('div');
+    imageWrap.className = 'contact_photo_wrap';
+
+    const image = document.createElement('img');
+    image.className = 'contact_photo';
+    image.src = 'assets/contact/sebastian-profile.jpeg';
+    image.alt = 'Juan Sebastian Gonzalez T.';
+
+    const links = document.createElement('div');
+    links.className = 'contact_links';
+
+    contactLinks.forEach((contactLink) => {
+        const linkElement = document.createElement('a');
+        linkElement.className = `contact_link contact_link--${contactLink.id}`;
+        linkElement.href = contactLink.href;
+        linkElement.dataset.contactId = contactLink.id;
+        linkElement.setAttribute('aria-label', translateText(contactLink.labelKey));
+
+        if (contactLink.href !== '#') {
+            linkElement.target = '_blank';
+            linkElement.rel = 'noopener noreferrer';
+        } else {
+            linkElement.addEventListener('click', (event) => event.preventDefault());
+        }
+
+        const icon = document.createElement('span');
+        icon.className = 'contact_link_icon';
+        icon.textContent = contactLink.label;
+
+        const text = document.createElement('span');
+        text.className = 'contact_link_text';
+        text.textContent = translateText(contactLink.labelKey);
+
+        linkElement.append(icon, text);
+        links.appendChild(linkElement);
+    });
+
+    imageWrap.appendChild(image);
+    panel.append(imageWrap, links);
+
+    return panel;
+};
+
+const renderContactPanel = ({ animate = false } = {}) => {
+    if (!dom.introText || !dom.introMain || !dom.introNote) {
+        return;
+    }
+
+    clearContactPanel();
+    clearProjectCards();
+    dom.introText.classList.add('has-contact');
+    dom.introText.classList.toggle('is-final', true);
+    dom.introMain.textContent = '';
+    dom.introNote.textContent = '';
+    updateSectionActionButton('');
+
+    const panel = buildContactPanel();
+    dom.introText.appendChild(panel);
+    state.currentIntroContent = {
+        mainKey: 'sectionContact',
+        view: 'contactSocial',
+        isFinal: true
+    };
+
+    if (!animate) {
+        return;
+    }
+
+    const photo = panel.querySelector('.contact_photo_wrap');
+    const links = [...panel.querySelectorAll('.contact_link')];
+
+    anime.set(dom.introText, {
+        opacity: 1,
+        translateX: 0,
+        translateY: 0,
+        scale: 1
+    });
+
+    anime.set(photo, {
+        opacity: 0,
+        scale: 0.72,
+        translateY: 24
+    });
+
+    anime.set(links, {
+        opacity: 0,
+        scale: 0.34,
+        translateY: -82
+    });
+
+    anime({
+        targets: photo,
+        opacity: [0, 1],
+        scale: [0.72, 1],
+        translateY: [24, 0],
+        duration: 620,
+        easing: 'easeOutBack(1.25)',
+        complete: () => {
+            anime({
+                targets: links,
+                opacity: [0, 1],
+                scale: [0.34, 1],
+                translateY: [-82, 0],
+                delay: anime.stagger(95),
+                duration: 520,
+                easing: 'easeOutBack(1.8)'
+            });
+        }
+    });
+};
+
+const showContactPanel = () => {
+    if (!dom.introText || state.isSectionActionAnimating) {
+        return;
+    }
+
+    const animationId = state.sectionActionAnimationId + 1;
+    state.sectionActionAnimationId = animationId;
+    state.isSectionAnimating = true;
+    state.isSectionActionAnimating = true;
+    state.sectionDetails.contacto = true;
+    dom.sectionActionButton.disabled = true;
+    dom.sectionActionButton.classList.add('is-busy');
+    setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), false);
+
+    const exitingElements = [dom.introMain, dom.sectionActionButton].filter(Boolean);
+
+    anime.remove(exitingElements);
+    anime({
+        targets: exitingElements,
+        opacity: [1, 0],
+        translateY: [0, -18],
+        scale: [1, 0.94],
+        delay: anime.stagger(70),
+        duration: 260,
+        easing: 'easeInQuad',
+        complete: () => {
+            if (animationId !== state.sectionActionAnimationId) {
+                return;
+            }
+
+            renderContactPanel({ animate: true });
+            state.isSectionAnimating = false;
+            state.isSectionActionAnimating = false;
+            setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), true);
+        }
+    });
 };
 
 const createProjectCard = (project) => {
@@ -1177,7 +1397,13 @@ const openProjectDetail = (project, sourceCard) => {
     `;
 
     dom.table.appendChild(detail);
-    detail.querySelector('.project_detail_close').addEventListener('click', () => closeProjectDetail());
+    detail.addEventListener('click', (event) => {
+        if (event.target.closest('.project_detail_close')) {
+            event.preventDefault();
+            event.stopPropagation();
+            closeProjectDetail();
+        }
+    });
     detail.querySelector('.project_detail_image').addEventListener('error', (event) => {
         event.currentTarget.hidden = true;
     });
@@ -1286,10 +1512,11 @@ const animateMainTextChange = (nextKey) => {
         return Promise.resolve();
     }
 
+    dom.introMain.classList.remove('is-long-text');
     const currentCharacters = [...dom.introMain.textContent].map((character) => {
         const characterElement = document.createElement('span');
         characterElement.className = 'intro_letter';
-        characterElement.textContent = character === ' ' ? '\u00a0' : character;
+        characterElement.textContent = character;
         return characterElement;
     });
 
@@ -1307,10 +1534,11 @@ const animateMainTextChange = (nextKey) => {
             easing: 'easeInQuad',
             complete: () => {
                 const nextText = translateText(nextKey);
+                dom.introMain.classList.toggle('is-long-text', nextText.length > 22);
                 const nextCharacters = [...nextText].map((character) => {
                     const characterElement = document.createElement('span');
                     characterElement.className = 'intro_letter';
-                    characterElement.textContent = character === ' ' ? '\u00a0' : character;
+                    characterElement.textContent = character;
                     return characterElement;
                 });
 
@@ -1343,6 +1571,9 @@ const animateActionButtonToDetail = (detailKey) => {
 
     const startWidth = dom.sectionActionButton.offsetWidth;
     const startHeight = dom.sectionActionButton.offsetHeight;
+    const detailText = translateText(detailKey);
+    const measuringElement = dom.sectionActionButton.cloneNode(false);
+    const maxDetailWidth = Math.max(startWidth, Math.min(dom.introText.clientWidth, 620));
 
     anime.remove(dom.sectionActionButton);
 
@@ -1355,32 +1586,81 @@ const animateActionButtonToDetail = (detailKey) => {
             duration: 160,
             easing: 'easeInQuad',
             complete: () => {
+                measuringElement.className = `${dom.sectionActionButton.className} is-detail`;
+                measuringElement.textContent = detailText;
+                measuringElement.style.position = 'absolute';
+                measuringElement.style.visibility = 'hidden';
+                measuringElement.style.pointerEvents = 'none';
+                measuringElement.style.width = `${maxDetailWidth}px`;
+                measuringElement.style.maxWidth = '100%';
+                measuringElement.style.height = 'auto';
+                dom.introText.appendChild(measuringElement);
+
+                const endWidth = maxDetailWidth;
+                const endHeight = Math.max(startHeight, measuringElement.scrollHeight + 8);
+                measuringElement.remove();
+
                 dom.sectionActionButton.style.width = `${startWidth}px`;
                 dom.sectionActionButton.style.height = `${startHeight}px`;
                 updateSectionActionButton(detailKey, state.language, 'detail');
+                dom.sectionActionButton.textContent = '';
                 dom.sectionActionButton.classList.add('is-busy');
-
-                const endWidth = Math.max(startWidth, Math.min(dom.introText.offsetWidth, 620));
-                dom.sectionActionButton.style.width = `${endWidth}px`;
-                dom.sectionActionButton.style.height = 'auto';
-                const endHeight = Math.max(startHeight, dom.sectionActionButton.scrollHeight + 8);
-                dom.sectionActionButton.style.width = `${startWidth}px`;
-                dom.sectionActionButton.style.height = `${startHeight}px`;
+                dom.sectionActionButton.style.opacity = '1';
+                dom.sectionActionButton.style.transform = 'translateY(0) scale(0.98)';
 
                 anime({
                     targets: dom.sectionActionButton,
                     width: [startWidth, endWidth],
                     height: [startHeight, endHeight],
-                    opacity: [0, 1],
-                    translateY: [10, 0],
+                    opacity: [0.72, 1],
+                    translateY: [4, 0],
                     scale: [0.98, 1],
-                    duration: 520,
-                    easing: 'easeOutCubic',
+                    duration: 420,
+                    easing: 'easeInOutCubic',
                     complete: () => {
-                        dom.sectionActionButton.style.width = '';
-                        dom.sectionActionButton.style.height = '';
-                        dom.sectionActionButton.classList.remove('is-busy');
-                        resolve();
+                        const detailTextElement = document.createElement('span');
+                        detailTextElement.className = 'section_action_text';
+                        detailTextElement.textContent = detailText;
+                        dom.sectionActionButton.replaceChildren(detailTextElement);
+
+                        anime.set(detailTextElement, {
+                            opacity: 0,
+                            translateY: 8
+                        });
+
+                        anime({
+                            targets: detailTextElement,
+                            opacity: [0, 1],
+                            translateY: [8, 0],
+                            duration: 280,
+                            easing: 'easeOutCubic',
+                            complete: () => {
+                                const currentWidth = dom.sectionActionButton.offsetWidth;
+                                const currentHeight = dom.sectionActionButton.offsetHeight;
+
+                                dom.sectionActionButton.style.width = '';
+                                dom.sectionActionButton.style.height = '';
+                                const naturalWidth = dom.sectionActionButton.offsetWidth;
+                                const naturalHeight = dom.sectionActionButton.offsetHeight;
+
+                                dom.sectionActionButton.style.width = `${currentWidth}px`;
+                                dom.sectionActionButton.style.height = `${currentHeight}px`;
+
+                                anime({
+                                    targets: dom.sectionActionButton,
+                                    width: [currentWidth, naturalWidth],
+                                    height: [currentHeight, naturalHeight],
+                                    duration: 260,
+                                    easing: 'easeOutCubic',
+                                    complete: () => {
+                                        dom.sectionActionButton.style.width = '';
+                                        dom.sectionActionButton.style.height = '';
+                                        dom.sectionActionButton.classList.remove('is-busy');
+                                        resolve();
+                                    }
+                                });
+                            }
+                        });
                     }
                 });
             }
@@ -1442,20 +1722,21 @@ const showSection = (nextIndex, direction = 1) => {
     hideIntroTimer();
     setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), false);
 
-    const exitX = direction > 0 ? -28 : 28;
-    const enterX = direction > 0 ? 32 : -32;
-
     anime.remove(dom.introText);
     state.sectionActionAnimationId += 1;
     state.isSectionActionAnimating = false;
+    const exitY = direction > 0 ? 18 : -18;
+    const enterY = direction > 0 ? -16 : 16;
+
     anime({
         targets: dom.introText,
         opacity: [getOpacity(dom.introText), 0],
-        translateX: [0, exitX],
-        translateY: [0, -4],
-        scale: [1, 0.98],
-        duration: 220,
-        easing: 'easeInQuad',
+        translateX: 0,
+        translateY: [0, exitY],
+        scale: [1, 0.965],
+        filter: ['blur(0rem)', 'blur(0.45rem)'],
+        duration: 260,
+        easing: 'easeInOutQuad',
         complete: () => {
             state.currentSectionIndex = normalizedIndex;
             updateNavigationButtons(state.language, { animate: true });
@@ -1464,12 +1745,14 @@ const showSection = (nextIndex, direction = 1) => {
             anime({
                 targets: dom.introText,
                 opacity: [0, 1],
-                translateX: [enterX, 0],
-                translateY: [8, 0],
-                scale: [0.98, 1],
-                duration: 420,
-                easing: 'easeOutCubic',
+                translateX: 0,
+                translateY: [enterY, 0],
+                scale: [0.985, 1],
+                filter: ['blur(0.35rem)', 'blur(0rem)'],
+                duration: 520,
+                easing: 'easeOutExpo',
                 complete: () => {
+                    dom.introText.style.filter = '';
                     state.isSectionAnimating = false;
                     setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), true);
                 }
@@ -1512,6 +1795,11 @@ const setupSectionActions = () => {
 
         if (currentSection.id === 'proyectos') {
             showProjectCards();
+            return;
+        }
+
+        if (currentSection.id === 'contacto') {
+            showContactPanel();
             return;
         }
 
