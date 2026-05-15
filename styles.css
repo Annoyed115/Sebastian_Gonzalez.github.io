@@ -278,6 +278,13 @@ body {
     line-height: 1;
 }
 
+.contact_github_icon {
+    display: block;
+    width: 2rem;
+    height: 2rem;
+    fill: currentColor;
+}
+
 .contact_link--github:hover,
 .contact_link--github:focus-visible {
     color: #000;

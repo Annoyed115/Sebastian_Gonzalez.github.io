@@ -58,14 +58,14 @@ const translations = {
         sectionAboutName: 'Juan Sebastian Gonzalez T.',
         sectionAboutBio: 'Desarrollador Front End Con vision a futuro de ser Full Stack, enfocado en crear interfaces limpias, responsive y agradables para las personas que las usan.',
         sectionProjectsAction: 'Ver proyectos',
-        projectCard1Category: 'Frontend',
-        projectCard1Title: 'Landing Page',
-        projectCard1Summary: 'Interfaz responsive con animaciones suaves y estructura clara.',
-        projectCard1Detail: 'Proyecto enfocado en presentar informacion de forma directa, con componentes visuales limpios y una experiencia comoda en celulares, tablets y escritorio.',
-        projectCard2Category: 'UI Interactiva',
-        projectCard2Title: 'Dashboard',
-        projectCard2Summary: 'Panel visual para organizar datos y acciones importantes.',
-        projectCard2Detail: 'Una seccion pensada para mostrar metricas, accesos rapidos y estados de usuario con una composicion facil de escanear.',
+        projectCard1Category: '.NET Framework + SQL Server',
+        projectCard1Title: 'Transaction Tracker',
+        projectCard1Summary: 'Seguimiento de transacciones con .NET Framework y Microsoft SQL.',
+        projectCard1Detail: 'Aplicacion para registrar, consultar y organizar transacciones, conectando una interfaz de gestion con persistencia en Microsoft SQL Server.',
+        projectCard2Category: '.NET SDK + SignalR',
+        projectCard2Title: 'Chat en tiempo real',
+        projectCard2Summary: 'Aplicacion de mensajeria en vivo usando .NET SDK y SignalR.',
+        projectCard2Detail: 'Chat en tiempo real enfocado en comunicacion instantanea, usando SignalR para mantener mensajes sincronizados entre usuarios conectados.',
         projectCard3Category: 'Portfolio',
         projectCard3Title: 'Experiencia Web',
         projectCard3Summary: 'Exploracion visual con microinteracciones y contenido modular.',
@@ -105,14 +105,14 @@ const translations = {
         sectionAboutName: 'Juan Sebastian Gonzalez T.',
         sectionAboutBio: 'Front End Developer with a long-term vision to become a Full Stack Developer, focused on creating clean, responsive and pleasant interfaces for the people who use them.',
         sectionProjectsAction: 'View projects',
-        projectCard1Category: 'Frontend',
-        projectCard1Title: 'Landing Page',
-        projectCard1Summary: 'Responsive interface with smooth animations and a clear structure.',
-        projectCard1Detail: 'A project focused on presenting information directly, with clean visual components and a comfortable experience across phones, tablets and desktop.',
-        projectCard2Category: 'Interactive UI',
-        projectCard2Title: 'Dashboard',
-        projectCard2Summary: 'Visual panel for organizing important data and actions.',
-        projectCard2Detail: 'A section designed to show metrics, quick actions and user states with a composition that is easy to scan.',
+        projectCard1Category: '.NET Framework + SQL Server',
+        projectCard1Title: 'Transaction Tracker',
+        projectCard1Summary: 'Transaction tracking with .NET Framework and Microsoft SQL.',
+        projectCard1Detail: 'Application to register, review and organize transactions, connecting a management interface with Microsoft SQL Server persistence.',
+        projectCard2Category: '.NET SDK + SignalR',
+        projectCard2Title: 'Real-time Chat',
+        projectCard2Summary: 'Live messaging application using .NET SDK and SignalR.',
+        projectCard2Detail: 'Real-time chat focused on instant communication, using SignalR to keep messages synchronized between connected users.',
         projectCard3Category: 'Portfolio',
         projectCard3Title: 'Web Experience',
         projectCard3Summary: 'Visual exploration with microinteractions and modular content.',
@@ -935,22 +935,22 @@ const sections = [
 
 const projectCards = [
     {
-        id: 'landing',
+        id: 'transaction-tracker',
         categoryKey: 'projectCard1Category',
         titleKey: 'projectCard1Title',
         summaryKey: 'projectCard1Summary',
         detailKey: 'projectCard1Detail',
-        image: 'assets/projects/landing-page.png',
+        image: 'assets/projects/transaction-tracker.png',
         repoUrl: 'https://github.com/Annoyed115',
         tone: 'blue'
     },
     {
-        id: 'dashboard',
+        id: 'real-time-chat',
         categoryKey: 'projectCard2Category',
         titleKey: 'projectCard2Title',
         summaryKey: 'projectCard2Summary',
         detailKey: 'projectCard2Detail',
-        image: 'assets/projects/dashboard.png',
+        image: 'assets/projects/real-time-chat.png',
         repoUrl: 'https://github.com/Annoyed115',
         tone: 'green'
     },
@@ -980,7 +980,7 @@ const contactLinks = [
     {
         id: 'github',
         labelKey: 'contactGithubLabel',
-        label: 'GH',
+        label: '',
         href: 'https://github.com/Annoyed115'
     },
     {
@@ -1002,6 +1002,16 @@ const contactLinks = [
         href: 'https://github.com/Annoyed115?tab=repositories'
     }
 ];
+
+const createGithubIcon = () => {
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('class', 'contact_github_icon');
+    icon.setAttribute('viewBox', '0 0 24 24');
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = '<path d="M12 2C6.48 2 2 6.58 2 12.22c0 4.52 2.87 8.34 6.84 9.69.5.09.68-.22.68-.49 0-.24-.01-1.04-.01-1.89-2.78.62-3.37-1.21-3.37-1.21-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.56 2.36 1.11 2.93.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.27 2.75 1.05A9.31 9.31 0 0 1 12 6.94c.85 0 1.71.12 2.51.35 1.91-1.32 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.12 10.12 0 0 0 22 12.22C22 6.58 17.52 2 12 2Z"></path>';
+
+    return icon;
+};
 
 const getSectionContent = (section) => {
     if (state.sectionDetails[section.id] && section.detailMainKey && section.detailActionKey) {
@@ -1105,7 +1115,12 @@ const buildContactPanel = () => {
 
         const icon = document.createElement('span');
         icon.className = 'contact_link_icon';
-        icon.textContent = contactLink.label;
+
+        if (contactLink.id === 'github') {
+            icon.appendChild(createGithubIcon());
+        } else {
+            icon.textContent = contactLink.label;
+        }
 
         const text = document.createElement('span');
         text.className = 'contact_link_text';
