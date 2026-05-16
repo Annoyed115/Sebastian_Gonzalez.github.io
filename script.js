@@ -941,7 +941,7 @@ const projectCards = [
         summaryKey: 'projectCard1Summary',
         detailKey: 'projectCard1Detail',
         image: 'assets/projects/transaction-tracker.png',
-        repoUrl: 'https://github.com/Annoyed115',
+        repoUrl: 'https://github.com/Annoyed115/Transaction-Income-Expenses-Tracker',
         tone: 'blue'
     },
     {
