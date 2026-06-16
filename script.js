@@ -21,6 +21,7 @@ const uiButtons = [
     dom.nextButton,
     dom.expandButton
 ].filter(Boolean);
+const navButtons = [dom.prevButton, dom.nextButton].filter(Boolean);
 
 // Mantiene los tiempos del Home en un solo lugar para ajustar el ritmo sin buscar setTimeouts sueltos.
 const introConfig = {
@@ -192,8 +193,6 @@ const setButtonInteractivity = (buttons, enabled) => {
 // Language
 
 const applyLanguage = (language) => {
-    const dictionary = translations[language] || translations.es;
-
     document.documentElement.lang = language;
 
     if (dom.languageText) {
@@ -204,14 +203,6 @@ const applyLanguage = (language) => {
         dom.languageButton.setAttribute('aria-pressed', String(language !== 'es'));
         dom.languageButton.setAttribute('aria-label', translateText('languageButtonLabel', language));
     }
-
-    document.querySelectorAll('[data-i18n]').forEach((element) => {
-        const translatedText = dictionary[element.dataset.i18n];
-
-        if (translatedText) {
-            element.textContent = translatedText;
-        }
-    });
 
     // Actualiza el texto visible sin reiniciar la seccion ni perder la animacion actual.
     if (state.currentIntroContent && dom.introMain && dom.introNote) {
@@ -498,24 +489,6 @@ const setIntroContent = ({ mainKey, noteKey = '', main = '', note = '', actionKe
     dom.introNote.textContent = noteKey ? translateText(noteKey) : note;
     updateSectionActionButton(actionKey, state.language, actionMode);
     dom.introText.classList.toggle('is-final', isFinal);
-};
-
-const cloneIntroContent = (content) => {
-    if (!content) {
-        return null;
-    }
-
-    // Se guarda antes de agrandar/achicar para restaurar secciones sin volver al inicio del Home.
-    return {
-        mainKey: content.mainKey,
-        noteKey: content.noteKey,
-        main: content.main,
-        note: content.note,
-        actionKey: content.actionKey,
-        actionMode: content.actionMode,
-        view: content.view,
-        isFinal: content.isFinal
-    };
 };
 
 const shouldRestoreIntroAfterResize = (content) => {
@@ -843,13 +816,11 @@ const updateNavigationButtons = (language = state.language, options = {}) => {
 };
 
 const animateNavigationButtons = (useArrows) => {
-    const navigationButtons = [dom.prevButton, dom.nextButton].filter(Boolean);
-
-    anime.remove(navigationButtons);
+    anime.remove(navButtons);
     setNavigationButtons(useArrows, state.language, { animate: true });
 
     anime({
-        targets: navigationButtons,
+        targets: navButtons,
         scale: [0.96, 1],
         duration: 240,
         delay: anime.stagger(35),
@@ -878,7 +849,8 @@ const handleExpandClick = () => {
     hideExpandArrow();
 
     if (shouldAdaptFinalText) {
-        state.introContentAfterResize = cloneIntroContent(state.currentIntroContent);
+        // ponytail: plain data snapshot; custom clone only if this grows functions or DOM nodes.
+        state.introContentAfterResize = state.currentIntroContent ? structuredClone(state.currentIntroContent) : null;
         clearTimerList(state.introTimers);
         clearTimeout(state.portfolioPromptTimer);
         hideIntroForResize();
@@ -1216,7 +1188,7 @@ const showContactPanel = () => {
     state.sectionDetails.contacto = true;
     dom.sectionActionButton.disabled = true;
     dom.sectionActionButton.classList.add('is-busy');
-    setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), false);
+    setButtonInteractivity(navButtons, false);
 
     const exitingElements = [dom.introMain, dom.sectionActionButton].filter(Boolean);
 
@@ -1237,7 +1209,7 @@ const showContactPanel = () => {
             renderContactPanel({ animate: true });
             state.isSectionAnimating = false;
             state.isSectionActionAnimating = false;
-            setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), true);
+            setButtonInteractivity(navButtons, true);
         }
     });
 };
@@ -1480,7 +1452,7 @@ const showProjectCards = () => {
     state.sectionDetails.proyectos = true;
     dom.sectionActionButton.disabled = true;
     dom.sectionActionButton.classList.add('is-busy');
-    setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), false);
+    setButtonInteractivity(navButtons, false);
 
     const exitingElements = [dom.introMain, dom.sectionActionButton].filter(Boolean);
 
@@ -1515,7 +1487,7 @@ const showProjectCards = () => {
                 complete: () => {
                     state.isSectionAnimating = false;
                     state.isSectionActionAnimating = false;
-                    setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), true);
+                    setButtonInteractivity(navButtons, true);
                 }
             });
         }
@@ -1701,7 +1673,7 @@ const showSectionDetail = (section) => {
     dom.sectionActionButton.disabled = true;
     dom.sectionActionButton.classList.add('is-busy');
     setButtonInteractivity([dom.sectionActionButton].filter(Boolean), false);
-    setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), false);
+    setButtonInteractivity(navButtons, false);
 
     Promise.all([
         animateMainTextChange(section.detailMainKey),
@@ -1714,7 +1686,7 @@ const showSectionDetail = (section) => {
         setIntroContent(getSectionContent(section));
         state.isSectionAnimating = false;
         state.isSectionActionAnimating = false;
-        setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), true);
+        setButtonInteractivity(navButtons, true);
     });
 };
 
@@ -1735,7 +1707,7 @@ const showSection = (nextIndex, direction = 1) => {
     clearTimeout(state.portfolioPromptTimer);
     hideExpandArrow();
     hideIntroTimer();
-    setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), false);
+    setButtonInteractivity(navButtons, false);
 
     anime.remove(dom.introText);
     state.sectionActionAnimationId += 1;
@@ -1769,7 +1741,7 @@ const showSection = (nextIndex, direction = 1) => {
                 complete: () => {
                     dom.introText.style.filter = '';
                     state.isSectionAnimating = false;
-                    setButtonInteractivity([dom.prevButton, dom.nextButton].filter(Boolean), true);
+                    setButtonInteractivity(navButtons, true);
                 }
             });
         }

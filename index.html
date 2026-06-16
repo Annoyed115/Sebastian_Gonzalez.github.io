@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <title>Sebastian Gonzalez</title>
 </head>
 <body>
-
     <div class="language_control">
         <button class="language_button" type="button" aria-label="Cambiar idioma" aria-pressed="false">
             <span class="language_icon" aria-hidden="true"></span>
@@ -19,24 +17,22 @@
     </div>
 
     <div class="container">
-      <button class="Button_1">button</button>  
-        <div class="table_1" >
+        <button class="Button_1" type="button"></button>
+
+        <div class="table_1">
             <button class="table_expand" type="button" aria-label="Agrandar tablero">
                 <span class="table_expand_icon" aria-hidden="true"></span>
             </button>
+
             <div class="expand_arrow" aria-hidden="true">
                 <span class="expand_arrow_inner">
                     <span class="expand_arrow_line"></span>
                 </span>
             </div>
-            <div class="rope_left" >
 
-            </div>
-            <div class="rope_right"> 
+            <div class="rope_left"></div>
+            <div class="rope_right"></div>
 
-
-            </div>
-            
             <div class="table_content">
                 <div class="intro_text" aria-live="polite">
                     <span class="intro_main"></span>
@@ -49,26 +45,11 @@
                     </span>
                     <button class="section_action_button" type="button" hidden></button>
                 </div>
-            </div> 
+            </div>
         </div>
-     <button class="Button_2">button</button>    
 
-   
-
-
-
+        <button class="Button_2" type="button"></button>
     </div>
-
-     
-
-
-
-
-
-
-
-
-
 
     <script src="script.js"></script>
 </body>
