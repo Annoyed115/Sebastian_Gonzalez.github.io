@@ -1,0 +1,9 @@
+/node_modules
+/.next/
+/out/
+*.tsbuildinfo
+next-env.d.ts
+.env*
+.DS_Store
+# a separate project that lives in this folder, not part of the portfolio
+/open-webui/
